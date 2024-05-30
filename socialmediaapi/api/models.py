@@ -72,7 +72,7 @@ class Requests(models.Model):
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, null=False)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_requests')
+    requested_by = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_requests')
     requested_to = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='received_requests')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     requested_at = models.DateTimeField(auto_now_add=True)
