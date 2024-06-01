@@ -1,5 +1,5 @@
 from rest_framework.pagination import PageNumberPagination
 
 
-class UserListPagination(PageNumberPagination):
+class CustomPagination(PageNumberPagination):
     page_size = 10
