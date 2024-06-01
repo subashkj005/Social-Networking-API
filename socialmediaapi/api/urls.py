@@ -12,5 +12,5 @@ urlpatterns = [
     path('requests/send_request/', views.SendFriendRequestAPIView.as_view(), name='send_request'),
     path('requests/update/', views.UpdateFriendRequestAPIView.as_view(), name='send_request'),
     path('requests/pending_requests/', views.ListPendingRequests.as_view(), name='send_request'),
-    path('requests/list_friends/', views.ListPendingRequests.as_view(), name='list_friends'),
+    path('requests/list_friends/', views.ListFriends.as_view(), name='list_friends'),
 ]

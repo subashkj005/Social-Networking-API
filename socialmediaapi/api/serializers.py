@@ -1,6 +1,5 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
-from .models import Users, Requests, Connections
+from .models import Users, Requests
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -31,17 +30,10 @@ class UsersSerializer(serializers.ModelSerializer):
     
 class UserRequestsSerializer(serializers.ModelSerializer):
     requested_by = UsersSerializer(read_only=True)
-
     class Meta:
         model = Requests
         fields = ['id', 'requested_by', 'status', 'requested_at']
-        
-        
-class UserConnectionSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Connections
-        fields = ['user', 'friend']
+
 
         
     

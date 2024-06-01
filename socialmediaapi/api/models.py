@@ -55,12 +55,6 @@ class Users(AbstractBaseUser):
     
     def __str__(self):
         return self.email
-
-
-class Connections(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, null=False)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='user_connections')
-    friend = models.ForeignKey(Users, on_delete=models.CASCADE)
     
     
 class Requests(models.Model):

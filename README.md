@@ -62,3 +62,8 @@ docker-compose build
 docker-compose up -d
 ```
 4. Congratulations, Now the application will be available on [localhost:8000](http://localhost:8000/)
+## Documentation
+
+Detailed documentation of each API endpoint can be found in the Postman collection provided in the repository. Also the link to the documentation is also providing [here](https://documenter.getpostman.com/view/28819113/2sA3Qwb9zV).
+
+

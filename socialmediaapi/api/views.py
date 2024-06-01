@@ -6,12 +6,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
-from api.serializers import UsersSerializer, UserRequestsSerializer, UserConnectionSerializer
+from api.serializers import UsersSerializer, UserRequestsSerializer
 from api.paginations import CustomPagination
-from .models import Users, Requests, Connections
+from api.utils import has_reached_request_limit, is_password_strong_enough
+from api.models import Users, Requests
 
 
 class UserRegisterAPIView(APIView):
+    """
+    API endpoint to register a new user.
+
+    Accepts POST requests with user data including name, email, password, and confirm-password.
+    
+    Methods:
+        post(request): Handles the HTTP POST request to register a user.
+
+    Returns:
+            Response: A Response object with appropriate status and message.
+                - 201 Created: If the user is successfully registered.
+                - 400 Bad Request: If there are validation errors in the user data.
+                - 409 Conflict: If the email is already registered.
+                - 422 Unprocessable Entity: If the provided data is invalid.
+    """
     permission_classes = []
 
     def post(self, request):
@@ -19,6 +35,9 @@ class UserRegisterAPIView(APIView):
 
         if not data:
             return Response({'message': "Invalid data"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        
+        if not is_password_strong_enough(data['password']):
+            return Response({'message': "Password is not strong enough"}, status=status.HTTP_400_BAD_REQUEST)
 
         user_exists = Users.objects.filter(email=data['email']).first()
         if user_exists:
@@ -36,6 +55,19 @@ class UserRegisterAPIView(APIView):
 
 
 class LoginUserAPIView(APIView):
+    """
+    API view for logging in a user.
+    
+    Accepts POST request to authenticate the user with the provided email and password.
+    
+    Methods:
+        post(request): Handles the HTTP POST request to authenticate a user.
+    
+    Returns:
+            Response: 
+                - 200 OK: If the login is successful, returns authentication tokens.
+                - 400 Bad Request: If there are validation errors in the login data or invalid credentials.
+    """
     permission_classes = []
 
     def post(self, request):
@@ -59,6 +91,18 @@ class LoginUserAPIView(APIView):
 
 
 class SearchUsersListView(generics.ListAPIView):
+    """
+    API view for searching and listing users.
+
+    Accepts GET request to search for users based on a keyword provided as a query parameter.
+    The search is performed on either the user's name or email, depending on the nature of the keyword.
+
+    Methods:
+        get_queryset(): Retrieves the queryset of users matching the search keyword.
+    
+    Returns:
+        List : A list of users matching the search criteria or an empty list if no keyword is provided.
+    """
     serializer_class = UsersSerializer
     pagination_class = CustomPagination
 
@@ -75,6 +119,21 @@ class SearchUsersListView(generics.ListAPIView):
 
 
 class SendFriendRequestAPIView(APIView):
+    """
+    API view for sending a friend request.
+
+    Accepts POST request to send a friend request to a user specified by their email.
+    
+    Methods:
+        post(request): Handles the HTTP POST request to send a friend request.
+    
+    Returns:
+        Response: 
+            - 201 Created: If the friend request is sent successfully.
+            - 400 Bad Request: If there are validation errors, the user doesn't exist, the request already exists, 
+              or the maximum requests per minute are reached.
+    """
+    
     def post(self, request):
         email = request.data.get('email', None)
         sender = request.user
@@ -89,29 +148,32 @@ class SendFriendRequestAPIView(APIView):
         if request_already_exists:
             return Response({'message': "Request already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-        current_time = timezone.now()
-        min_time = current_time - timedelta(minutes=1)
-
-        total_requests_in_last_minute = Requests.objects.filter(
-            requested_at__gte=min_time, requested_at__lte=current_time, requested_by=sender)
-
-        if total_requests_in_last_minute.count() >= 3:
+        if has_reached_request_limit(sender):
             return Response({'message': 'Maximum requests per minute reached. Please wait a while before sending more.'},
                             status=status.HTTP_400_BAD_REQUEST)
+            
+        new_request = Requests.objects.create(requested_by=sender,
+                                              requested_to=recipient)
 
-        data = {
-            'requested_by': sender.id,
-            'requested_to': recipient.id
-        }
-        serializer = UserRequestsSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': "Friend request sent successfully"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': "Friend request sent successfully"}, status=status.HTTP_201_CREATED)
+        
 
 
 class UpdateFriendRequestAPIView(APIView):
+    """
+    API view for updating the status of a friend request.
+
+    Accepts POST request to either accept or reject a friend request based on the provided task.
+
+    Methods:
+        post(request): Handles the HTTP POST request to update the status of a friend request.
+
+    Returns:
+        Response:
+            - 200 OK: If the request status is updated successfully.
+            - 400 Bad Request: If there are validation errors, missing fields, invalid request ID, 
+              the request doesn't exist, or the user doesn't have permission to update the request.
+    """
     def post(self, request):
         task = request.data.get('task', None)
         request_id = request.data.get('request_id', None)
@@ -119,10 +181,14 @@ class UpdateFriendRequestAPIView(APIView):
 
         if task is None or request_id is None:
             return Response({'message': "Required fields missing"})
+        
+        values =  Requests.objects.filter(requested_to=self.request.user,
+                                       status='accepted').order_by('-requested_at')
+        
+        print('Friends = ', values)
 
         try:
             user_request = Requests.objects.get(id=request_id)
-
         except Requests.DoesNotExist:
             return Response({'message': "Request doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError:
@@ -137,14 +203,6 @@ class UpdateFriendRequestAPIView(APIView):
                     request_serializer.save()
                     return Response({'message': "Request accepted Successfully"},
                                     status=status.HTTP_200_OK)
-
-                data = {
-                    'user': update_requested_user.id,
-                    'friend': user_request.requested_by.id
-                }
-                connection_serializer = UserConnectionSerializer(data=data)
-                if connection_serializer.is_valid():
-                    connection_serializer.save()
 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -163,18 +221,40 @@ class UpdateFriendRequestAPIView(APIView):
 
 
 class ListPendingRequests(generics.ListAPIView):
+    """
+    API view for listing pending friend requests.
+
+    This view retrieves and paginates all pending friend requests for the authenticated user.
+
+    Methods:
+        get_queryset(): Retrieves the queryset of pending friend requests for the authenticated user.
+    
+    Returns:
+        List: A list of pending friend requests for the authenticated user.
+    """
     serializer_class = UserRequestsSerializer
     pagination_class = CustomPagination
 
     def get_queryset(self):
         return Requests.objects.filter(requested_to=self.request.user,
-                                       status='pending')
+                                       status='pending').order_by('-requested_at')
 
 
 class ListFriends(generics.ListAPIView):
+    """
+    API view for listing accepted friend requests.
+
+    This view retrieves and paginates all accepted friend requests for the authenticated user.
+
+    Methods:
+        get_queryset(): Retrieves the queryset of accepted friend requests for the authenticated user.
+    
+    Returns:
+        QuerySet: A queryset of accepted friend requests for the authenticated user.
+    """
     serializer_class = UserRequestsSerializer
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Requests.objects.filter(requested_by=self.request.user,
-                                       status='accepted')
+        return Requests.objects.filter(requested_to=self.request.user,
+                                       status='accepted').order_by('-requested_at')
