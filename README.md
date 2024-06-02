@@ -10,7 +10,7 @@ This project is an implementation of a social networking API using Django Rest F
 
 - User Authentication: Users can sign up and log in using their email and password.
 - User Search: Search for other users by email or name, with pagination support.
-- Fullscreen modeFriend Management: Send, accept, or reject friend requests, and list friends and pending friend requests.
+- Friend Management: Send, accept, or reject friend requests, and list friends and pending friend requests.
 
 
 
