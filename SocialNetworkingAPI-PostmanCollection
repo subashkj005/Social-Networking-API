@@ -5,7 +5,7 @@
 		"description": "This project is an implementation of a social networking API using Django Rest Framework. It provides various functionalities for users to interact with the platform, including user authentication, searching for other users, sending/accepting/rejecting friend requests, and managing friends.\n\n## Features\n\n- User Authentication: Users can sign up and log in using their email and password.\n    \n- User Search: Search for other users by email or name, with pagination support.\n    \n- Fullscreen modeFriend Management: Send, accept, or reject friend requests, and list friends and pending friend requests.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "28819113",
-		"_collection_link": "https://galactic-desert-401025.postman.co/workspace/82968cff-cf54-4d0c-bf07-7212bd014d89/collection/28819113-e59c0c1b-c444-48fd-b5ec-ca4cd176213f?action=share&source=collection_link&creator=28819113"
+		"_collection_link": "https://galactic-desert-401025.postman.co/workspace/Project~82968cff-cf54-4d0c-bf07-7212bd014d89/collection/28819113-e59c0c1b-c444-48fd-b5ec-ca4cd176213f?action=share&source=collection_link&creator=28819113"
 	},
 	"item": [
 		{
@@ -15,7 +15,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"maryrussell100@gmail.com\",\r\n    \"password\": \"123\"\r\n}",
+					"raw": "{\r\n    \"email\": \"ravikrishnan@gmail.com\",\r\n    \"password\": \"testPassword@2\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -39,7 +39,86 @@
 				},
 				"description": "API endpoint for logging in a user. User must provide a valid email address and password for authentication."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "User Login",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"maryrussell100@gmail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/v1/auth/login/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login",
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sat, 01 Jun 2024 23:30:31 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "WSGIServer/0.2 CPython/3.11.3"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept"
+						},
+						{
+							"key": "Allow",
+							"value": "POST, OPTIONS"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "612"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "same-origin"
+						},
+						{
+							"key": "Cross-Origin-Opener-Policy",
+							"value": "same-origin"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Login Successfull\",\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxOTg3NjYzMSwiaWF0IjoxNzE3Mjg0NjMxLCJqdGkiOiIwNWVjMGE5YWIyNzA0NDRiOWJmMDA3NjA5ZGRmMTEzZiIsInVzZXJfaWQiOiI1MmY3NTQwMi00NDgzLTQ1NDYtOTQ0Zi00YmY0YjBhMzg5YWQifQ.bDwknHQwjFion5mt8urIjtuKO14K21Wc0L8UWXASiKQ\",\n    \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE3Mjg4MjMxLCJpYXQiOjE3MTcyODQ2MzEsImp0aSI6ImRjNjJhZDcwYzQxMzQ2NWE4YzA5ODU4YmU5ODEyNTFmIiwidXNlcl9pZCI6IjUyZjc1NDAyLTQ0ODMtNDU0Ni05NDRmLTRiZjRiMGEzODlhZCJ9.Z8KLMJzyn8IxjGtxdmZovudw0_DD1Gla03DxJrcm4oM\"\n}"
+				}
+			]
 		},
 		{
 			"name": "User Register",
